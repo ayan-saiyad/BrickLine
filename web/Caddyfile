@@ -1,0 +1,17 @@
+{
+  auto_https off
+  admin off
+}
+
+:8080 {
+  handle /api/* {
+    reverse_proxy {$API_UPSTREAM:api:8000}
+  }
+
+  handle {
+    root * /srv
+    try_files {path} /index.html
+    file_server
+  }
+}
+
