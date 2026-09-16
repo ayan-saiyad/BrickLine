@@ -9,8 +9,8 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM caddy:2.8.4-alpine
+RUN setcap -r /usr/bin/caddy
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv
 USER 1000:1000
 EXPOSE 8080
-
