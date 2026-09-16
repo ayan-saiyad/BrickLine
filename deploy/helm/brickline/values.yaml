@@ -10,6 +10,9 @@ api:
     pullPolicy: IfNotPresent
   service:
     port: 8000
+  probes:
+    healthPath: /api/health
+    readinessPath: /api/health
   resources:
     requests:
       cpu: 100m
@@ -72,4 +75,3 @@ imagePullSecrets: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
-

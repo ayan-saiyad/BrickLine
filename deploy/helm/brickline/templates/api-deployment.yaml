@@ -54,20 +54,20 @@ spec:
                   key: {{ .Values.secret.databaseUrlKey }}
           startupProbe:
             httpGet:
-              path: /api/health
+              path: {{ .Values.api.probes.healthPath }}
               port: http
             periodSeconds: 3
             failureThreshold: 20
           readinessProbe:
             httpGet:
-              path: /api/health
+              path: {{ .Values.api.probes.readinessPath }}
               port: http
             periodSeconds: 5
             timeoutSeconds: 2
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /api/health
+              path: {{ .Values.api.probes.healthPath }}
               port: http
             periodSeconds: 15
             timeoutSeconds: 3
@@ -105,4 +105,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-

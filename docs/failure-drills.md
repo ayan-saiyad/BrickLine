@@ -14,7 +14,7 @@ The expected behavior is that the remaining replica serves requests while a repl
 ## Failed rollout
 
 1. Note `helm -n brickline history brickline` and begin a modest k6 run.
-2. Set an impossible readiness path in a temporary chart copy or deploy a deliberately broken image tag.
+2. Run a controlled upgrade with `--set api.probes.readinessPath=/api/not-ready --wait --timeout 45s` while keeping the current image tags.
 3. Watch `kubectl -n brickline rollout status deployment/brickline-api --timeout=5m` stall.
 4. Run `scripts/rollback.sh PREVIOUS_REVISION`.
 5. Record rollback time and rerun the smoke test.
@@ -34,4 +34,3 @@ The expected behavior is that the remaining replica serves requests while a repl
 4. Record backup age and restore time.
 
 Never delete the working database to prove a restore.
-
