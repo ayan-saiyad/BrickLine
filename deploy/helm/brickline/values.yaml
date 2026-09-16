@@ -1,0 +1,75 @@
+nameOverride: ""
+fullnameOverride: ""
+
+api:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/example/brickline-api
+    tag: latest
+    digest: ""
+    pullPolicy: IfNotPresent
+  service:
+    port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+web:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/example/brickline-web
+    tag: latest
+    digest: ""
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+config:
+  corsOrigins: "http://localhost:3000"
+  importSourceUrl: "/app/data/lego-releases.csv"
+  importSourceName: "brickline-fixtures"
+
+secret:
+  name: brickline-secrets
+  databaseUrlKey: database-url
+
+import:
+  enabled: true
+  schedule: "0 6 * * *"
+  timeZone: "America/Chicago"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  activeDeadlineSeconds: 600
+
+migration:
+  activeDeadlineSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+monitoring:
+  enabled: false
+  interval: 30s
+
+imagePullSecrets: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+

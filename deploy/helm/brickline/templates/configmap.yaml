@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "brickline.fullname" . }}
+  labels:
+    {{- include "brickline.labels" . | nindent 4 }}
+data:
+  CORS_ORIGINS: {{ .Values.config.corsOrigins | quote }}
+  IMPORT_SOURCE_URL: {{ .Values.config.importSourceUrl | quote }}
+  IMPORT_SOURCE_NAME: {{ .Values.config.importSourceName | quote }}
+

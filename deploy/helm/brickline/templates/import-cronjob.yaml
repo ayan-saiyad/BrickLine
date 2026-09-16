@@ -1,0 +1,75 @@
+{{- if .Values.import.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "brickline.fullname" . }}-import
+  labels:
+    {{- include "brickline.labels" . | nindent 4 }}
+    app.kubernetes.io/component: importer
+spec:
+  schedule: {{ .Values.import.schedule | quote }}
+  timeZone: {{ .Values.import.timeZone | quote }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 1800
+  successfulJobsHistoryLimit: {{ .Values.import.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.import.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: {{ .Values.import.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ include "brickline.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/component: importer
+        spec:
+          serviceAccountName: {{ include "brickline.fullname" . }}
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: importer
+              image: {{ include "brickline.apiImage" . | quote }}
+              imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+              command: ["python", "-m", "app.cli", "import-data"]
+              args:
+                - {{ .Values.config.importSourceUrl | quote }}
+                - "--name"
+                - {{ .Values.config.importSourceName | quote }}
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secret.name }}
+                      key: {{ .Values.secret.databaseUrlKey }}
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 96Mi
+                limits:
+                  cpu: 500m
+                  memory: 384Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir: {}
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
+

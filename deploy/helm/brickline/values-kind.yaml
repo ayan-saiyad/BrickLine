@@ -1,0 +1,18 @@
+api:
+  image:
+    repository: brickline-api
+    tag: dev
+    pullPolicy: IfNotPresent
+
+web:
+  image:
+    repository: brickline-web
+    tag: dev
+    pullPolicy: IfNotPresent
+
+config:
+  corsOrigins: "http://localhost:3000,http://localhost:18080"
+
+monitoring:
+  enabled: false
+

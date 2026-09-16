@@ -1,0 +1,7 @@
+apiVersion: v2
+name: brickline
+description: Brickline web, API, and scheduled importer
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+

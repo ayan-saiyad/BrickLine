@@ -1,0 +1,8 @@
+Brickline is running inside the cluster.
+
+Open it locally with:
+
+  kubectl -n {{ .Release.Namespace }} port-forward service/{{ include "brickline.fullname" . }}-web 3000:{{ .Values.web.service.port }}
+
+The API metrics endpoint is only available through the internal API service.
+

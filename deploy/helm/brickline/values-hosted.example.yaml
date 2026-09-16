@@ -1,0 +1,26 @@
+# Build and push the images first, then replace both digests.
+api:
+  image:
+    repository: ghcr.io/your-account/brickline-api
+    tag: ""
+    digest: sha256:replace-me
+    pullPolicy: IfNotPresent
+
+web:
+  image:
+    repository: ghcr.io/your-account/brickline-web
+    tag: ""
+    digest: sha256:replace-me
+    pullPolicy: IfNotPresent
+
+config:
+  corsOrigins: "https://brickline.example.com"
+  importSourceUrl: "https://data.example.com/lego-releases.csv"
+  importSourceName: "maintained-feed"
+
+secret:
+  name: brickline-production-secrets
+
+monitoring:
+  enabled: true
+
