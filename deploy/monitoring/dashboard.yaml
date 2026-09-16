@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brickline-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  brickline.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "panels": [
+        {
+          "title": "Request volume",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+          "targets": [{"expr": "sum by (route) (rate(brickline_http_requests_total[5m]))", "legendFormat": "{{route}}"}]
+        },
+        {
+          "title": "p95 latency",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "targets": [{"expr": "histogram_quantile(0.95, sum by (le, route) (rate(brickline_http_request_duration_seconds_bucket[5m])))", "legendFormat": "{{route}}"}]
+        },
+        {
+          "title": "API error ratio",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+          "fieldConfig": {"defaults": {"unit": "percentunit"}},
+          "targets": [{"expr": "sum(rate(brickline_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(brickline_http_requests_total[5m]))"}]
+        },
+        {
+          "title": "Healthy replicas",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
+          "targets": [{"expr": "sum(kube_deployment_status_replicas_available{namespace=\"brickline\",deployment=~\"brickline-(api|web)\"})"}]
+        },
+        {
+          "title": "Container restarts",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+          "targets": [{"expr": "sum(kube_pod_container_status_restarts_total{namespace=\"brickline\"})"}]
+        },
+        {
+          "title": "Latest successful import",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 8},
+          "fieldConfig": {"defaults": {"unit": "dateTimeAsIso"}},
+          "targets": [{"expr": "max by (source) (brickline_import_last_success_unixtime) * 1000", "legendFormat": "{{source}}"}]
+        },
+        {
+          "title": "Rejected records",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 8},
+          "targets": [{"expr": "max by (source) (brickline_import_last_rejected_records)", "legendFormat": "{{source}}"}]
+        },
+        {
+          "title": "Current data age",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14},
+          "fieldConfig": {"defaults": {"unit": "h"}},
+          "targets": [{"expr": "(time() - max by (source) (brickline_import_last_success_unixtime)) / 3600", "legendFormat": "{{source}}"}]
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 41,
+      "tags": ["brickline"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "title": "Brickline operations",
+      "uid": "brickline-ops",
+      "version": 1
+    }
+

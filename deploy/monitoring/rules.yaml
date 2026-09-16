@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: brickline
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: brickline.imports
+      rules:
+        - alert: BricklineImportHasNeverSucceeded
+          expr: absent(brickline_import_last_success_unixtime)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: No successful Brickline import has been recorded
+        - alert: BricklineImportIsStale
+          expr: time() - max by (source) (brickline_import_last_success_unixtime) > 36 * 60 * 60
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Brickline import data is older than 36 hours
+    - name: brickline.api
+      rules:
+        - alert: BricklineApiErrorRatioHigh
+          expr: |
+            (
+              sum(rate(brickline_http_requests_total{status=~"5.."}[5m]))
+              /
+              sum(rate(brickline_http_requests_total[5m]))
+            ) > 0.05
+            and
+            sum(increase(brickline_http_requests_total[5m])) > 20
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Brickline API error ratio is above 5 percent
+
