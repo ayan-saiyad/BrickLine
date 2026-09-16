@@ -1,0 +1,1 @@
+A LEGO release and retirement tracker with calendar and timeline views, filters by theme, search, and a watchlist. Dates include sources and clear labels for estimates. The project uses automated data updates, Docker, and CI/CD, with an optional Kubernetes deployment for monitoring and recovery testing.
