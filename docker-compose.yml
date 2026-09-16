@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-brickline}
+      POSTGRES_USER: ${POSTGRES_USER:-brickline}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brickline}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brickline} -d ${POSTGRES_DB:-brickline}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: ./api
+    command: alembic upgrade head
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://brickline:brickline@db:5432/brickline}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://brickline:brickline@db:5432/brickline}
+      IMPORT_SOURCE_URL: ${IMPORT_SOURCE_URL:-/app/data/lego-releases.csv}
+      IMPORT_SOURCE_NAME: ${IMPORT_SOURCE_NAME:-brickline-fixtures}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "3000:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+
