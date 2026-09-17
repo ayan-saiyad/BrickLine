@@ -24,6 +24,11 @@ IMPORT_SUCCESS = Gauge(
     "Time of the latest successful import",
     ["source"],
 )
+IMPORT_SUCCESSES = Gauge(
+    "brickline_import_successful_runs",
+    "Persisted count of successful import runs",
+    ["source"],
+)
 IMPORT_FAILURES = Gauge(
     "brickline_import_failed_runs",
     "Persisted count of failed import runs",
@@ -40,7 +45,14 @@ async def track_requests(
     request: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
     started = time.perf_counter()
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        route = request.scope.get("route")
+        route_name = getattr(route, "path", "unmatched")
+        REQUESTS.labels(request.method, route_name, 500).inc()
+        LATENCY.labels(request.method, route_name).observe(time.perf_counter() - started)
+        raise
     route = request.scope.get("route")
     route_name = getattr(route, "path", "unmatched")
     REQUESTS.labels(request.method, route_name, response.status_code).inc()
@@ -68,8 +80,14 @@ def metrics_response(session: Session) -> Response:
             .select_from(ImportRun)
             .where(ImportRun.source_name == source, ImportRun.state == "failed")
         )
+        successes = session.scalar(
+            select(func.count())
+            .select_from(ImportRun)
+            .where(ImportRun.source_name == source, ImportRun.state == "succeeded")
+        )
         if last_success and last_success.finished_at:
             IMPORT_SUCCESS.labels(source).set(last_success.finished_at.timestamp())
+        IMPORT_SUCCESSES.labels(source).set(successes or 0)
         IMPORT_FAILURES.labels(source).set(failures or 0)
         IMPORT_REJECTED.labels(source).set(latest.rejected_count if latest else 0)
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

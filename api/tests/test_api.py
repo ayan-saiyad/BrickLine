@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import UTC, date, datetime
 
 from app.models import ImportRun, LegoSet, ReleaseEvent
 
@@ -33,3 +33,29 @@ def test_health_and_metrics(client):
     metrics = client.get("/metrics")
     assert metrics.status_code == 200
     assert "brickline_http_requests_total" in metrics.text
+
+
+def test_metrics_include_persisted_import_counts(client, session):
+    session.add_all(
+        [
+            ImportRun(
+                source_name="fixture",
+                source_url="file.csv",
+                state="succeeded",
+                finished_at=datetime.now(UTC),
+            ),
+            ImportRun(source_name="fixture", source_url="missing.csv", state="failed"),
+        ]
+    )
+    session.commit()
+
+    metrics = client.get("/metrics").text
+
+    assert 'brickline_import_successful_runs{source="fixture"} 1.0' in metrics
+    assert 'brickline_import_failed_runs{source="fixture"} 1.0' in metrics
+
+
+def test_bad_date_filter_is_rejected(client):
+    response = client.get("/api/sets", params={"date_from": "next-week"})
+
+    assert response.status_code == 422

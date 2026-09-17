@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,8 +41,8 @@ def list_sets(
     theme: list[str] = Query(default=[]),
     status: list[str] = Query(default=[]),
     event_type: str | None = Query(default=None, pattern="^(release|retirement)$"),
-    date_from: str | None = None,
-    date_to: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=100, ge=1, le=250),
     session: Session = Depends(get_db),
