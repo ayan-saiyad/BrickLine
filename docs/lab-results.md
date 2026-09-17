@@ -20,6 +20,10 @@ Revision 3 was used as the healthy baseline. Revision 4 deliberately pointed the
 
 The first cluster bring-up also exposed two real packaging problems: the disposable PostgreSQL container needed permission to initialize its data directory, and the stock Caddy binary carried a file capability that conflicted with the pod security context. The manifests now account for both.
 
+## Monitoring
+
+The pinned monitoring stack installed successfully, the Grafana sidecar loaded the Brickline dashboard, and Prometheus reported both API replicas as healthy scrape targets. All three committed Brickline alert rules loaded with healthy evaluations. A temporary `vector(1)` verification rule reached the firing state and was removed afterward; revision 6 then passed the application smoke checks with monitoring enabled.
+
 ## Reproduce the checks
 
 The commands and expected observations are in [failure-drills.md](failure-drills.md). Deployment result files, database dumps, and other local evidence are ignored by Git so a normal test run does not dirty the repository.
