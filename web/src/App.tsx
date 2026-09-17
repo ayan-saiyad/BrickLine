@@ -77,8 +77,19 @@ export default function App() {
           <a className="active" href="#calendar">
             Calendar
           </a>
-          <a href="#about">About</a>
+          <a href="#about">How it works</a>
         </nav>
+        <label className="search-box header-search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            type="search"
+            placeholder="Search by set name or number"
+            value={filters.query}
+            onChange={(event) =>
+              setFilters((current) => ({ ...current, query: event.target.value }))
+            }
+          />
+        </label>
         <div className="freshness" title="Age of the latest successful data import">
           <i className={status?.latest_run?.state === "failed" ? "warning" : ""} />
           {formatDataAge(status?.data_age_seconds ?? null)}
@@ -86,23 +97,28 @@ export default function App() {
       </header>
 
       <main id="calendar">
+        <div className="breadcrumb">
+          <span>Home</span>
+          <b aria-hidden="true">›</b>
+          <span>Release calendar</span>
+        </div>
         <section className="hero">
-          <div>
-            <span className="eyebrow">LEGO release tracker</span>
+          <div className="hero-copy">
+            <span className="eyebrow">Release and retirement tracker</span>
             <h1>Plan the next build.</h1>
-            <p>Release dates, retirement estimates, and the sets worth keeping an eye on.</p>
+            <p>
+              See what is arriving, what is leaving, and which dates are still estimates before
+              you decide what comes next.
+            </p>
           </div>
-          <label className="search-box">
-            <span aria-hidden="true">⌕</span>
-            <input
-              type="search"
-              placeholder="Search by set name or number"
-              value={filters.query}
-              onChange={(event) =>
-                setFilters((current) => ({ ...current, query: event.target.value }))
-              }
-            />
-          </label>
+          <div className="hero-build" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
         </section>
 
         <div className="workspace">
