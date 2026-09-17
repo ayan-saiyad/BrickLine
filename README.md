@@ -40,4 +40,4 @@ npm install
 npm run dev
 ```
 
-See [docs/data-import.md](docs/data-import.md) for the import format and [docs/kubernetes.md](docs/kubernetes.md) for the optional local cluster.
+See [docs/data-import.md](docs/data-import.md) for the import format, [docs/kubernetes.md](docs/kubernetes.md) for the optional local cluster, and [docs/lab-results.md](docs/lab-results.md) for the latest recovery exercise.
