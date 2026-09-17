@@ -178,6 +178,24 @@ def _apply_rows(session: Session, rows: list[ImportRow], run: ImportRun) -> None
                     "to": [str(value) for value in event_after],
                 }
 
+        if row.retirement_date is None:
+            retirement = session.scalar(
+                select(ReleaseEvent).where(
+                    ReleaseEvent.set_number == row.set_number,
+                    ReleaseEvent.event_type == "retirement",
+                )
+            )
+            if retirement:
+                changes["retirement"] = {
+                    "from": [
+                        str(retirement.event_date),
+                        retirement.confidence,
+                        retirement.source_url,
+                    ],
+                    "to": None,
+                }
+                session.delete(retirement)
+
         if changes:
             session.add(SetChange(set_number=row.set_number, import_run_id=run.id, changes=changes))
 

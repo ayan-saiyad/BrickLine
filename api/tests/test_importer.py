@@ -42,3 +42,17 @@ def test_bad_file_keeps_existing_data(db_engine, session, tmp_path):
         select(ImportRun).where(ImportRun.state == "failed").order_by(ImportRun.id.desc())
     )
     assert failed.rejected_count == 1
+
+
+def test_import_removes_a_cleared_retirement_date(db_engine, session, tmp_path):
+    source = tmp_path / "sets.csv"
+    source.write_text(CSV)
+    run_import(db_engine, str(source), "test")
+
+    source.write_text(CSV.replace(",2027-01-01,", ",,"))
+    run_import(db_engine, str(source), "test")
+    session.expire_all()
+
+    events = session.scalars(select(ReleaseEvent)).all()
+    assert [event.event_type for event in events] == ["release"]
+    assert session.scalar(select(func.count()).select_from(SetChange)) == 2
