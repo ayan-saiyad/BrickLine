@@ -33,9 +33,9 @@ kubectl apply -f "$ROOT/deploy/lab-postgres"
 kubectl -n "$NAMESPACE" rollout status statefulset/brickline-postgres --timeout=180s
 
 previous_revision=0
-if helm -n "$NAMESPACE" status "$RELEASE" >/dev/null 2>&1; then
-  previous_revision=$(helm -n "$NAMESPACE" status "$RELEASE" -o json | \
-    python3 -c 'import json,sys; data=json.load(sys.stdin); print(data["version"] if data["info"]["status"] == "deployed" else 0)')
+if helm -n "$NAMESPACE" history "$RELEASE" >/dev/null 2>&1; then
+  previous_revision=$(helm -n "$NAMESPACE" history "$RELEASE" -o json | \
+    python3 -c 'import json,sys; rows=json.load(sys.stdin); print(max((int(row["revision"]) for row in rows if row["status"] == "deployed"), default=0))')
 fi
 
 rollback() {
